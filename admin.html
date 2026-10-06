@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Console — DeepGuard AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+        <div>
+            <h3 class="fw-bold text-light mb-1"><i class="fas fa-user-shield text-warning me-2"></i> Administrator Control Panel</h3>
+            <p class="text-muted small mb-0">System-wide surveillance, user access management, and media scan auditing.</p>
+        </div>
+        <span class="badge bg-warning text-dark font-monospace fw-bold px-3 py-2">ADMIN PRIVILEGES ACTIVE</span>
+    </div>
+
+    <!-- Admin KPI Cards -->
+    <div class="row g-3 mb-4 px-3">
+        <div class="col-md-2 col-6">
+            <div class="glass-card p-3">
+                <span class="text-muted text-xs font-monospace">TOTAL USERS</span>
+                <h3 class="fw-bold text-light mb-0 mt-1 font-monospace">{{ total_users }}</h3>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="glass-card p-3">
+                <span class="text-muted text-xs font-monospace">TOTAL ANALYSES</span>
+                <h3 class="fw-bold text-cyan mb-0 mt-1 font-monospace">{{ total_analyses }}</h3>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="glass-card p-3">
+                <span class="text-muted text-xs font-monospace">IMAGES ANALYZED</span>
+                <h3 class="fw-bold text-light mb-0 mt-1 font-monospace">{{ total_images }}</h3>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="glass-card p-3">
+                <span class="text-muted text-xs font-monospace">VIDEOS ANALYZED</span>
+                <h3 class="fw-bold text-light mb-0 mt-1 font-monospace">{{ total_videos }}</h3>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="glass-card p-3">
+                <span class="text-muted text-xs font-monospace">LIKELY REAL</span>
+                <h3 class="fw-bold text-success mb-0 mt-1 font-monospace">{{ likely_real_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="glass-card p-3">
+                <span class="text-muted text-xs font-monospace">POSSIBLY FAKE</span>
+                <h3 class="fw-bold text-danger mb-0 mt-1 font-monospace">{{ possibly_fake_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Activity Chart -->
+    <div class="row px-3 mb-4">
+        <div class="col-12">
+            <div class="glass-card p-4">
+                <h5 class="fw-bold text-light mb-3"><i class="fas fa-chart-line text-cyan me-2"></i> System Scan Activity (Last 7 Days)</h5>
+                <div style="height: 240px;">
+                    <canvas id="admin-chart-daily"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Management Tables Row -->
+    <div class="row g-4 px-3">
+        <!-- User Management Table -->
+        <div class="col-lg-6">
+            <div class="glass-card p-4">
+                <h5 class="fw-bold text-light mb-3"><i class="fas fa-users text-cyan me-2"></i> User Accounts ({{ users|length }})</h5>
+                <div class="table-cyber-wrapper">
+                    <table class="table-cyber">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                            <tr>
+                                <td class="font-monospace text-muted">#{{ u.id }}</td>
+                                <td class="fw-medium text-light">{{ u.name }}</td>
+                                <td class="text-muted text-xs">{{ u.email }}</td>
+                                <td>
+                                    <span class="badge {% if u.role == 'admin' %}bg-warning text-dark{% else %}bg-secondary{% endif %} font-monospace">
+                                        {{ u.role | upper }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if u.id != 1 %}
+                                    <button onclick="deleteUser({{ u.id }})" class="btn btn-outline-danger btn-sm py-0 px-2 text-xs" title="Delete User">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Detection Records Table -->
+        <div class="col-lg-6">
+            <div class="glass-card p-4">
+                <h5 class="fw-bold text-light mb-3"><i class="fas fa-database text-cyan me-2"></i> System Scans Log</h5>
+                <div class="table-cyber-wrapper">
+                    <table class="table-cyber">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Filename</th>
+                                <th>Verdict</th>
+                                <th>Confidence</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in recent_detections %}
+                            <tr>
+                                <td class="font-monospace text-muted">#{{ d.id }}</td>
+                                <td class="text-xs text-light">{{ d.user.name if d.user else 'Guest' }}</td>
+                                <td class="text-xs text-muted text-truncate" style="max-width: 130px;">{{ d.original_filename }}</td>
+                                <td>
+                                    {% if d.prediction == 'LIKELY REAL' %}
+                                    <span class="badge-cyber badge-real text-xs">REAL</span>
+                                    {% else %}
+                                    <span class="badge-cyber badge-fake text-xs">FAKE</span>
+                                    {% endif %}
+                                </td>
+                                <td class="font-monospace text-cyan text-xs">{{ d.confidence }}%</td>
+                                <td>
+                                    <button onclick="adminDeleteDetection({{ d.id }})" class="btn btn-outline-danger btn-sm py-0 px-2 text-xs" title="Delete Record">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.ADMIN_CHART_DATA = {{ admin_chart_data | tojson }};
+
+    function deleteUser(id) {
+        if (!confirm('Are you sure you want to delete this user?')) return;
+        fetch(`/admin/users/${id}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) location.reload();
+            else alert(data.error || 'Failed to delete user');
+        });
+    }
+
+    function adminDeleteDetection(id) {
+        if (!confirm('Are you sure you want to delete this detection record?')) return;
+        fetch(`/admin/detections/${id}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) location.reload();
+            else alert(data.error || 'Failed to delete detection');
+        });
+    }
+</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

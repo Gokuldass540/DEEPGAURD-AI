@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Media Verification — DeepGuard AI{% endblock %}
+
+{% block content %}
+<div class="container py-4 my-2">
+    <div class="text-center mb-4">
+        <span class="badge-cyber badge-real mb-2">DeepGuard AI Scanner</span>
+        <h2 class="fw-bold text-light mb-1"><i class="fas fa-shield-virus text-cyan me-2"></i> AI Media Verification</h2>
+        <p class="text-muted small">Upload an image or video to inspect facial manipulation and neural generation artifacts.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="glass-card p-4">
+                <!-- Dropzone Upload Area -->
+                <div class="dropzone mb-4" id="media-dropzone">
+                    <i class="fas fa-cloud-upload-alt display-3 text-cyan mb-3"></i>
+                    <h5 class="fw-bold text-light">Drop your image or video here</h5>
+                    <p class="text-muted small mb-3">Supported formats: JPG, JPEG, PNG, MP4, MOV, AVI (Max 50MB)</p>
+                    <button type="button" class="btn btn-cyber-secondary btn-sm" onclick="document.getElementById('media-file-input').click();">
+                        <i class="fas fa-folder-open me-1"></i> Choose File
+                    </button>
+                    <input type="file" id="media-file-input" class="d-none" accept=".jpg,.jpeg,.png,.mp4,.mov,.avi">
+                </div>
+
+                <!-- Preview Container -->
+                <div id="preview-container" class="mb-4" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-light fw-semibold text-xs font-monospace"><i class="fas fa-eye text-cyan me-1"></i> MEDIA PREVIEW</span>
+                        <button type="button" class="btn btn-outline-danger btn-sm text-xs py-0 px-2" id="change-file-btn">
+                            <i class="fas fa-times me-1"></i> Remove File
+                        </button>
+                    </div>
+                    <div class="media-preview-container" id="media-preview">
+                        <div class="scanner-overlay"></div>
+                    </div>
+                </div>
+
+                <!-- File Details Card -->
+                <div class="p-3 rounded mb-4" id="file-info-card" style="display: none; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-color);">
+                    <div class="row text-center font-monospace text-xs text-muted">
+                        <div class="col-4">
+                            <span class="d-block text-cyan">FILENAME</span>
+                            <span class="text-light text-truncate d-block" id="info-filename">-</span>
+                        </div>
+                        <div class="col-4">
+                            <span class="d-block text-cyan">FILE TYPE</span>
+                            <span class="text-light" id="info-filetype">-</span>
+                        </div>
+                        <div class="col-4">
+                            <span class="d-block text-cyan">FILE SIZE</span>
+                            <span class="text-light" id="info-filesize">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Frame Configurator (Visible for Video) -->
+                <div id="video-config-group" class="mb-4" style="display: none;">
+                    <label class="form-label d-flex justify-content-between text-muted text-xs font-monospace">
+                        <span><i class="fas fa-film text-cyan me-1"></i> VIDEO FRAME SAMPLING</span>
+                        <span class="text-cyan"><span id="frame-count-val">24</span> frames</span>
+                    </label>
+                    <input type="range" class="form-range" id="frame-count-slider" min="10" max="60" value="24" step="2">
+                    <small class="text-muted d-block text-xs">Higher frame sampling improves temporal detection accuracy across long videos.</small>
+                </div>
+
+                <!-- Model Mode Toggle Option -->
+                <div class="d-flex align-items-center justify-content-between p-3 rounded mb-4" style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color);">
+                    <div>
+                        <div class="fw-semibold text-light text-sm"><i class="fas fa-toggle-on text-cyan me-1"></i> Demo Mode Toggle</div>
+                        <small class="text-muted text-xs">Enable to demonstrate simulated predictions with clear demo badge indicator.</small>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="demo-mode-checkbox">
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-center">
+                    <button type="button" id="analyze-btn" class="btn btn-cyber py-3 px-5 fs-6" style="display: none;">
+                        <i class="fas fa-rocket me-2"></i> 🚀 Analyze Media
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Scanning Progress Overlay Modal -->
+<div id="progress-overlay" class="position-fixed top-0 start-0 w-100 h-100 justify-content-center align-items-center" style="display: none; background: rgba(6, 9, 17, 0.92); backdrop-filter: blur(12px); z-index: 2000;">
+    <div class="glass-card text-center p-5 border-cyan" style="max-width: 480px; width: 90%;">
+        <div class="spinner-border text-cyan mb-4" style="width: 3.5rem; height: 3.5rem;" role="status"></div>
+        <h4 class="fw-bold text-light mb-2">DeepGuard AI Scanner</h4>
+        <p class="text-cyan font-monospace text-sm mb-4" id="progress-status-text">Initializing AI analysis...</p>
+
+        <div class="text-start font-monospace text-xs text-muted mb-3" id="progress-step-list">
+            <div class="d-flex align-items-center mb-2" id="progress-step-1">
+                <span class="step-icon me-2 text-cyan">○</span> Initializing AI media processing...
+            </div>
+            <div class="d-flex align-items-center mb-2" id="progress-step-2">
+                <span class="step-icon me-2 text-cyan">○</span> Detecting faces with OpenCV...
+            </div>
+            <div class="d-flex align-items-center mb-2" id="progress-step-3">
+                <span class="step-icon me-2 text-cyan">○</span> Sampling spatial & temporal frames...
+            </div>
+            <div class="d-flex align-items-center mb-2" id="progress-step-4">
+                <span class="step-icon me-2 text-cyan">○</span> Running PyTorch deepfake neural model...
+            </div>
+            <div class="d-flex align-items-center mb-2" id="progress-step-5">
+                <span class="step-icon me-2 text-cyan">○</span> Generating verification report...
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/detection.js') }}"></script>
+{% endblock %}

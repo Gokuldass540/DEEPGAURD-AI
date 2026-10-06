@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}500 Internal Server Error — DeepGuard AI{% endblock %}
+
+{% block content %}
+<div class="container py-5 my-5 text-center">
+    <div class="glass-card py-5 px-4 max-w-md mx-auto" style="max-width: 500px;">
+        <div class="display-1 font-monospace text-danger fw-bold mb-3">500</div>
+        <h3 class="text-light fw-bold mb-3">Internal System Error</h3>
+        <p class="text-muted small mb-4">An unexpected processing anomaly occurred. Our automated security protocols have logged this event.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-cyber">
+            <i class="fas fa-home me-2"></i> Return to Safety (Home)
+        </a>
+    </div>
+</div>
+{% endblock %}

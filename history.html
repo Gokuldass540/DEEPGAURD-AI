@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}Detection History — DeepGuard AI{% endblock %}
+
+{% block content %}
+<div class="container py-4 my-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-light mb-1"><i class="fas fa-history text-cyan me-2"></i> Detection History</h3>
+            <p class="text-muted small mb-0">Browse and filter past AI deepfake verification scans.</p>
+        </div>
+        <a href="{{ url_for('detection.detection_page') }}" class="btn btn-cyber btn-sm">
+            <i class="fas fa-plus me-1"></i> New Detection
+        </a>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="glass-card mb-4 p-3">
+        <div class="row g-3">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-dark border-secondary text-muted"><i class="fas fa-search text-cyan"></i></span>
+                    <input type="text" id="history-search-input" class="form-input" placeholder="Search by filename...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select id="filter-media-type" class="form-input">
+                    <option value="All">All Media Types</option>
+                    <option value="Image">Images Only</option>
+                    <option value="Video">Videos Only</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="filter-prediction" class="form-input">
+                    <option value="All">All Verdicts</option>
+                    <option value="LIKELY REAL">Likely Real</option>
+                    <option value="POSSIBLY FAKE">Possibly Fake</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button type="button" id="btn-reset-filters" class="btn btn-cyber-secondary w-100 p-2" title="Reset Filters">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Table -->
+    <div class="glass-card p-0 overflow-hidden">
+        <div class="table-cyber-wrapper">
+            <table class="table-cyber" id="history-table">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Filename</th>
+                        <th>Type</th>
+                        <th>Verdict</th>
+                        <th>Confidence</th>
+                        <th>Faces</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="history-tbody">
+                    <!-- Populated via AJAX -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="history-empty-state" class="text-center py-5" style="display: none;">
+            <i class="fas fa-folder-open text-muted display-4 mb-3"></i>
+            <h5 class="text-light fw-bold">No Records Found</h5>
+            <p class="text-muted small">No detection history matches your search or filter parameters.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Record Detail Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content glass-card border-cyan">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title text-light"><i class="fas fa-file-invoice text-cyan me-2"></i> Detection Detail Report</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detail-modal-body">
+                <!-- Loaded dynamically -->
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-cyber-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('history-search-input');
+    const mediaFilter = document.getElementById('filter-media-type');
+    const predFilter = document.getElementById('filter-prediction');
+    const resetBtn = document.getElementById('btn-reset-filters');
+    const tbody = document.getElementById('history-tbody');
+    const emptyState = document.getElementById('history-empty-state');
+
+    function loadHistory() {
+        const q = searchInput.value.trim();
+        const media = mediaFilter.value;
+        const pred = predFilter.value;
+
+        const url = `/api/history?q=${encodeURIComponent(q)}&media_type=${encodeURIComponent(media)}&prediction=${encodeURIComponent(pred)}`;
+
+        fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success || data.records.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tbody.innerHTML = data.records.map(r => `
+                <tr>
+                    <td>${r.created_at}</td>
+                    <td class="fw-medium text-light">${r.original_filename}</td>
+                    <td><span class="badge bg-dark border border-secondary text-light font-monospace">${r.media_type}</span></td>
+                    <td>
+                        ${r.prediction === 'LIKELY REAL' 
+                            ? '<span class="badge-cyber badge-real">✓ LIKELY REAL</span>' 
+                            : '<span class="badge-cyber badge-fake">⚠️ POSSIBLY FAKE</span>'}
+                    </td>
+                    <td class="font-monospace fw-bold text-cyan">${r.confidence}%</td>
+                    <td class="font-monospace text-muted">${r.faces_detected}</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <a href="/result/${r.id}" class="btn btn-cyber-secondary btn-sm py-1 px-2 text-xs" title="View Full Result Page">
+                                <i class="fas fa-external-link-alt"></i> View
+                            </a>
+                            <button onclick="deleteRecord(${r.id})" class="btn btn-outline-danger btn-sm py-1 px-2 text-xs" title="Delete Record">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        });
+    }
+
+    [searchInput, mediaFilter, predFilter].forEach(elem => {
+        elem.addEventListener('change', loadHistory);
+        elem.addEventListener('keyup', loadHistory);
+    });
+
+    resetBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        mediaFilter.value = 'All';
+        predFilter.value = 'All';
+        loadHistory();
+    });
+
+    window.deleteRecord = function(id) {
+        if (!confirm('Are you sure you want to delete this detection record?')) return;
+        fetch(`/api/history/${id}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                loadHistory();
+            } else {
+                alert(data.error || 'Failed to delete record.');
+            }
+        });
+    };
+
+    loadHistory();
+});
+</script>
+{% endblock %}

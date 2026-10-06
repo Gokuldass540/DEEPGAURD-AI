@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile Settings — DeepGuard AI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="glass-card p-4 p-md-5">
+                <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom border-secondary">
+                    <div class="fs-1 text-cyan"><i class="fas fa-id-card"></i></div>
+                    <div>
+                        <h3 class="fw-bold text-light mb-0">{{ user.name }}</h3>
+                        <p class="text-muted small mb-0">{{ user.email }} • Role: <span class="badge bg-secondary font-monospace">{{ user.role | upper }}</span></p>
+                    </div>
+                </div>
+
+                <form action="{{ url_for('auth.profile') }}" method="POST">
+                    <h5 class="text-light fw-bold mb-3"><i class="fas fa-user-edit text-cyan me-2"></i> Update Personal Info</h5>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="name" class="form-input" value="{{ user.name }}" required>
+                    </div>
+
+                    <h5 class="text-light fw-bold mt-4 mb-3"><i class="fas fa-shield-halved text-cyan me-2"></i> Change Password</h5>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" name="current_password" class="form-input" placeholder="Leave blank to keep unchanged">
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label class="form-label">New Password</label>
+                        <input type="password" name="new_password" class="form-input" placeholder="Enter new password">
+                    </div>
+
+                    <button type="submit" class="btn btn-cyber">
+                        <i class="fas fa-save me-2"></i> Save Changes
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

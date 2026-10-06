@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}DeepGuard AI — AI-Based Deepfake Detection System{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section py-5 my-3 position-relative">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="badge-cyber badge-real mb-3">
+                    <span class="spinner-grow spinner-grow-sm text-cyan me-1" role="status"></span>
+                    AI-Powered Media Verification
+                </div>
+                <h1 class="display-4 fw-bold text-light mb-3 lh-sm">
+                    Detect What’s Real.<br>
+                    <span class="text-transparent bg-clip-text" style="background: linear-gradient(135deg, #00f0ff 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Expose What’s Fake.</span>
+                </h1>
+                <p class="lead text-muted mb-4">
+                    DeepGuard AI uses intelligent media analysis to identify potentially manipulated and AI-generated images and videos with OpenCV face tracking and multi-layer neural feature inspection.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{{ url_for('detection.detection_page') }}" class="btn btn-cyber py-3 px-4 fs-6">
+                        <i class="fas fa-search me-2"></i> 🔍 Start Detection
+                    </a>
+                    <a href="#how-it-works" class="btn btn-cyber-secondary py-3 px-4 fs-6">
+                        <i class="fas fa-network-wired me-2"></i> How It Works
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <!-- Hero Security Scanner Mockup -->
+                <div class="glass-card p-4 text-center position-relative border-cyan">
+                    <div class="d-flex justify-content-between align-items-center mb-3 text-muted small font-monospace">
+                        <span><i class="fas fa-shield-halved text-cyan me-1"></i> DEEPGUARD_SCANNER_v1.2</span>
+                        <span class="text-success"><i class="fas fa-circle text-xs me-1"></i> LIVE MONITORING</span>
+                    </div>
+
+                    <div class="media-preview-container scanning my-3" style="min-height: 280px; background: rgba(0,0,0,0.6);">
+                        <div class="scanner-overlay"></div>
+                        <div class="position-absolute top-50 start-50 translate-middle w-100 px-4">
+                            <div class="p-3 rounded border border-cyan text-start" style="background: rgba(15, 23, 42, 0.9);">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="spinner-border spinner-border-sm text-cyan" role="status"></div>
+                                        <span class="font-monospace text-cyan small">SCANNING_FACIAL_LANDMARKS...</span>
+                                    </div>
+                                    <span class="badge badge-fake">POSSIBLY FAKE</span>
+                                </div>
+                                <div class="progress bg-dark mb-2" style="height: 6px;">
+                                    <div class="progress-bar bg-cyan progress-bar-striped progress-bar-animated" style="width: 88%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted font-monospace text-xs">
+                                    <span>FFT SPECTRUM: 0.842</span>
+                                    <span>CONFIDENCE: 91.7%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mt-2 text-start font-monospace text-xs text-muted">
+                        <div class="col-6"><i class="fas fa-check text-cyan me-1"></i> OpenCV Haar Cascades</div>
+                        <div class="col-6"><i class="fas fa-check text-cyan me-1"></i> PyTorch Neural Extractor</div>
+                        <div class="col-6"><i class="fas fa-check text-cyan me-1"></i> Temporal Frame Analysis</div>
+                        <div class="col-6"><i class="fas fa-check text-cyan me-1"></i> SQLite Detection History</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- System Capabilities Section -->
+<section class="py-5 bg-dark-subtle">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="text-cyan font-monospace text-uppercase tracking-wider">System Capabilities</span>
+            <h2 class="fw-bold text-light mt-1">Multi-Layer Deepfake Analysis Engine</h2>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="glass-card h-100 text-center">
+                    <div class="icon-box mb-3 text-cyan fs-2">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h5 class="fw-semibold text-light mb-2">AI-Powered Detection</h5>
+                    <p class="text-muted small mb-0">Multi-layer neural backbone combined with facial feature spatial analysis to pinpoint generative anomalies.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card h-100 text-center">
+                    <div class="icon-box mb-3 text-purple fs-2" style="color: var(--accent-purple);">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <h5 class="fw-semibold text-light mb-2">Image Analysis</h5>
+                    <p class="text-muted small mb-0">Inspects high-frequency FFT power spectra, laplacian blur variance, and facial boundary color mismatches.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card h-100 text-center">
+                    <div class="icon-box mb-3 text-cyan fs-2">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <h5 class="fw-semibold text-light mb-2">Video Frame Sampling</h5>
+                    <p class="text-muted small mb-0">Extracts N configurable video frames, tracks facial landmarks across time, and measures temporal jitter.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card h-100 text-center">
+                    <div class="icon-box mb-3 text-success fs-2">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h5 class="fw-semibold text-light mb-2">Calibrated Confidence</h5>
+                    <p class="text-muted small mb-0">Generates calibrated percentage confidence metrics (e.g. 91.7%) backed by empirical analysis reports.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section id="how-it-works" class="py-5">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <span class="text-cyan font-monospace text-uppercase">5-Step Pipeline</span>
+            <h2 class="fw-bold text-light mt-1">How DeepGuard AI Operates</h2>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-2 col-md-4 col-sm-6 text-center">
+                <div class="glass-card py-4 h-100">
+                    <div class="display-6 font-monospace text-cyan mb-2">01</div>
+                    <h6 class="text-light fw-bold">Upload</h6>
+                    <p class="text-muted text-xs mb-0">User uploads image or video media file.</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 text-center">
+                <div class="glass-card py-4 h-100">
+                    <div class="display-6 font-monospace text-cyan mb-2">02</div>
+                    <h6 class="text-light fw-bold">Preprocess</h6>
+                    <p class="text-muted text-xs mb-0">System validates format & sanitizes file.</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 text-center">
+                <div class="glass-card py-4 h-100">
+                    <div class="display-6 font-monospace text-cyan mb-2">03</div>
+                    <h6 class="text-light fw-bold">OpenCV Scan</h6>
+                    <p class="text-muted text-xs mb-0">Detects faces & extracts video frames.</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 text-center">
+                <div class="glass-card py-4 h-100">
+                    <div class="display-6 font-monospace text-cyan mb-2">04</div>
+                    <h6 class="text-light fw-bold">AI Detection</h6>
+                    <p class="text-muted text-xs mb-0">Runs PyTorch & spatial artifact model.</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 text-center">
+                <div class="glass-card py-4 h-100">
+                    <div class="display-6 font-monospace text-cyan mb-2">05</div>
+                    <h6 class="text-light fw-bold">Result Report</h6>
+                    <p class="text-muted text-xs mb-0">Generates verdict, score & saves history.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Future Scope Section -->
+<section class="py-5 bg-dark-subtle">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge badge-demo mb-2">Roadmap & Vision</span>
+            <h2 class="fw-bold text-light">Future Scope</h2>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="glass-card h-100">
+                    <i class="fas fa-video text-cyan mb-3 fs-3"></i>
+                    <h6 class="text-light fw-bold">Real-Time Webcam Analysis</h6>
+                    <p class="text-muted small">Live stream deepfake detection directly from user webcams or video conference feeds.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card h-100">
+                    <i class="fas fa-puzzle-piece text-cyan mb-3 fs-3"></i>
+                    <h6 class="text-light fw-bold">Browser Extension</h6>
+                    <p class="text-muted small">One-click social media image and video deepfake scanner while browsing the web.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card h-100">
+                    <i class="fas fa-mobile-alt text-cyan mb-3 fs-3"></i>
+                    <h6 class="text-light fw-bold">Mobile iOS & Android App</h6>
+                    <p class="text-muted small">Native mobile application for instant media verification on smartphones.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

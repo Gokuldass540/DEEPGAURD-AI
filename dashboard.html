@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — DeepGuard AI{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-title">NAVIGATION</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item active">
+                <a href="{{ url_for('dashboard.index') }}"><i class="fas fa-chart-pie me-2 text-cyan"></i> Dashboard</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('detection.detection_page') }}"><i class="fas fa-upload me-2 text-cyan"></i> New Detection</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('detection.history_page') }}"><i class="fas fa-history me-2 text-cyan"></i> Detection History</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('auth.profile') }}"><i class="fas fa-user-cog me-2 text-cyan"></i> Profile</a>
+            </li>
+            {% if current_user.is_admin() %}
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.index') }}"><i class="fas fa-user-shield me-2 text-warning"></i> Admin Panel</a>
+            </li>
+            {% endif %}
+            <li class="sidebar-item mt-3">
+                <a href="{{ url_for('auth.logout') }}" class="text-danger"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Dashboard Area -->
+    <main class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-light mb-1"><i class="fas fa-tachometer-alt me-2 text-cyan"></i> Security Dashboard</h3>
+                <p class="text-muted small mb-0">Overview of AI media verification activity for {{ current_user.name }}</p>
+            </div>
+            <a href="{{ url_for('detection.detection_page') }}" class="btn btn-cyber">
+                <i class="fas fa-plus me-1"></i> New Detection
+            </a>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="glass-card text-start">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted text-xs font-monospace text-uppercase">Total Scans</span>
+                            <h2 class="fw-bold text-light mb-0 mt-1 font-monospace">{{ total_scans }}</h2>
+                        </div>
+                        <div class="fs-2 text-cyan"><i class="fas fa-microchip"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card text-start">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted text-xs font-monospace text-uppercase">Real Detected</span>
+                            <h2 class="fw-bold text-success mb-0 mt-1 font-monospace">{{ real_count }}</h2>
+                        </div>
+                        <div class="fs-2 text-success"><i class="fas fa-check-circle"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card text-start">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted text-xs font-monospace text-uppercase">Fake Detected</span>
+                            <h2 class="fw-bold text-danger mb-0 mt-1 font-monospace">{{ fake_count }}</h2>
+                        </div>
+                        <div class="fs-2 text-danger"><i class="fas fa-exclamation-triangle"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card text-start">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted text-xs font-monospace text-uppercase">Avg Confidence</span>
+                            <h2 class="fw-bold text-cyan mb-0 mt-1 font-monospace">{{ avg_confidence }}%</h2>
+                        </div>
+                        <div class="fs-2 text-cyan"><i class="fas fa-chart-line"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Charts Row -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="glass-card">
+                    <h5 class="fw-bold text-light mb-3"><i class="fas fa-chart-pie me-2 text-cyan"></i> Detection Verdict Distribution</h5>
+                    <div style="height: 250px;" class="position-relative">
+                        <canvas id="chart-distribution"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="glass-card">
+                    <h5 class="fw-bold text-light mb-3"><i class="fas fa-photo-video me-2 text-cyan"></i> Image vs Video Scans</h5>
+                    <div style="height: 250px;" class="position-relative">
+                        <canvas id="chart-media"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Table -->
+        <div class="glass-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-light mb-0"><i class="fas fa-list me-2 text-cyan"></i> Recent Detection Activity</h5>
+                <a href="{{ url_for('detection.history_page') }}" class="text-cyan text-decoration-none text-xs">View All <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+
+            {% if recent_detections %}
+            <div class="table-cyber-wrapper">
+                <table class="table-cyber">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Filename</th>
+                            <th>Media Type</th>
+                            <th>Prediction</th>
+                            <th>Confidence</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in recent_detections %}
+                        <tr>
+                            <td>{{ d.created_at.strftime('%b %d, %Y %H:%M') }}</td>
+                            <td class="fw-medium text-light">{{ d.original_filename }}</td>
+                            <td><span class="badge bg-dark border border-secondary text-light font-monospace">{{ d.media_type }}</span></td>
+                            <td>
+                                {% if d.prediction == 'LIKELY REAL' %}
+                                <span class="badge-cyber badge-real">✓ LIKELY REAL</span>
+                                {% else %}
+                                <span class="badge-cyber badge-fake">⚠️ POSSIBLY FAKE</span>
+                                {% endif %}
+                            </td>
+                            <td class="font-monospace fw-bold text-cyan">{{ d.confidence }}%</td>
+                            <td>
+                                <a href="{{ url_for('detection.result_page', detection_id=d.id) }}" class="btn btn-cyber-secondary btn-sm px-2 py-1 text-xs">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <!-- Empty state message -->
+            <div class="text-center py-5">
+                <i class="fas fa-shield-cat text-muted display-4 mb-3"></i>
+                <h5 class="text-light fw-bold">No Detection History Yet</h5>
+                <p class="text-muted small mb-4">You haven't uploaded any media files for deepfake verification.</p>
+                <a href="{{ url_for('detection.detection_page') }}" class="btn btn-cyber">
+                    <i class="fas fa-rocket me-2"></i> Start First Detection
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.USER_CHART_DATA = {{ chart_data | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
